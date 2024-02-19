@@ -23,6 +23,19 @@ router.get('/', async (_, response) => {
     const movies = await sql`select * from movies`;
     response.send(movies);
 });
+router.get('/tags', async (_, response) => {
+    const tags = await sql`select * from tags`;
+    response.send(tags);
+});
+router.get('/years', async (req, res) => {
+    try {
+        const years = await sql `SELECT DISTINCT year FROM movies ORDER BY year DESC`;
+        res.json(years);
+    } catch (error) {
+        console.error("Failed to fetch years:", error);
+        res.status(500).send({ error: "Failed to fetch years from the database." });
+    }
+});
 
 router.get('/:id', async (req, res) => {
     const { id } = req.params;
