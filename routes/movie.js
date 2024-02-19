@@ -27,6 +27,24 @@ router.get('/tags', async (_, response) => {
     const tags = await sql`select * from tags`;
     response.send(tags);
 });
+
+router.get('/tags/:tagName', async (req, response) => {
+    try {
+        const tagName = req.params.tagName.toLowerCase();
+        const movies = await sql`
+            SELECT movies.* FROM movies
+            JOIN movies_tags ON movies.id = movies_tags.movie_id
+            JOIN tags ON movies_tags.tag_id = tags.tag_id
+            WHERE LOWER(tags.tag_name) = ${tagName}
+        `;
+        response.json(movies);
+    } catch (error) {
+        console.error("Error fetching movies by tag:", error);
+        response.status(500).send('Server error: ' + error.message);
+    }
+});
+
+
 router.get('/years', async (req, res) => {
     try {
         const years = await sql `SELECT DISTINCT year FROM movies ORDER BY year DESC`;
@@ -34,6 +52,19 @@ router.get('/years', async (req, res) => {
     } catch (error) {
         console.error("Failed to fetch years:", error);
         res.status(500).send({ error: "Failed to fetch years from the database." });
+    }
+});
+router.get('/year/:year', async (req, response) => {
+    try {
+        const { year } = req.params;
+        const movies = await sql`
+            SELECT * FROM movies
+            WHERE year = ${year}
+        `;
+        response.json(movies);
+    } catch (error) {
+        console.error("Error fetching movies by year:", error);
+        response.status(500).send('Server error: ' + error.message);
     }
 });
 
