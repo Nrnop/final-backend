@@ -98,6 +98,43 @@ router.get('/:id/watchlist', async (req, res) => {
     }
 });
 
+router.post('/manageWatchlist', async (req, res) => {
+    try {
+        const { movie_id, user_id } = req.body;
 
+        // check if the movie is already in the user's watchlist
+        const checkResponse = await sql`select * from users_movies where movie_id = ${movie_id} and user_id = ${user_id}`;
+
+        if (checkResponse.length > 0) {
+            // If the movie is in the watchlist, remove it
+            const deleteResponse = await sql`delete from users_movies where movie_id = ${movie_id} and user_id = ${user_id} returning *`;
+            res.send({ message: "Movie removed from watchlist", movie: deleteResponse[0] });
+        } else {
+            // If the movie is not in the watchlist, add it
+            const insertResponse = await sql`insert into users_movies (movie_id, user_id) values (${movie_id}, ${user_id}) returning *`;
+            res.send({ message: "Movie added to watchlist", movie: insertResponse[0] });
+        }
+    } catch (error) {
+        console.error('Error modifying watchlist:', error);
+        res.status(500).send('Server error');
+    }
+});
+
+router.get('/:userId/isMovieInWatchlist/:movieId', async (req, res) => {
+    try {
+        const { userId, movieId } = req.params; // Extracting userId and movieId from URL parameters
+
+        // Query to check if the movie is already in the user's watchlist
+        const checkResponse = await sql`SELECT EXISTS(SELECT 1 FROM users_movies WHERE movie_id = ${movieId} AND user_id = ${userId})`;
+
+        // Since we're using EXISTS, the query will return a boolean inside an object, e.g., { exists: true }
+        const isInWatchlist = checkResponse[0].exists;
+
+        res.send({ isInWatchlist }); // Send back the boolean result
+    } catch (error) {
+        console.error('Error checking watchlist:', error);
+        res.status(500).send('Server error');
+    }
+});
 
 module.exports = router;
