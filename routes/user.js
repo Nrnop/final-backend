@@ -68,6 +68,7 @@ router.post('/login', async (req, res) => {
                 username: foundUser[0].username,
                 first_name: foundUser[0].first_name,
                 last_name: foundUser[0].last_name,
+                bio: foundUser[0].bio,
                 role: foundUser[0].role
             }
         });
@@ -138,3 +139,31 @@ router.get('/:userId/isMovieInWatchlist/:movieId', async (req, res) => {
 });
 
 module.exports = router;
+
+router.put('/:id/updateUserInfo', async (req, res) => {
+    const userId = req.params.id;
+    const { firstName, lastName, username, bio } = req.body;
+
+    try {
+        if (!firstName || !lastName || !username) {
+            return res.status(400).send({ message: "All fields except ID are required." });
+        }
+        const response = await sql`
+            UPDATE users
+            SET first_name = ${firstName}, last_name = ${lastName}, username = ${username}, bio = ${bio}
+            WHERE id = ${userId}
+            RETURNING *;
+        `;
+
+        if (response.count === 0) {
+            return res.status(404).send({ message: "User not found." });
+        }
+
+        const updatedData = response[0];
+        res.send(updatedData);
+    } catch (error) {
+        console.error('Error updating user:', error);
+        res.status(500).send('Server error');
+    }
+});
+
