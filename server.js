@@ -16,7 +16,8 @@ app.use('/users',userRoute);
 const movieRoute=require("./routes/movie");
 app.use('/movies',movieRoute);
 
-
+const adminRoute=require("./routes/admin");
+app.use('/admin',adminRoute);
 
 
 app.listen(port, () => console.log(`Server is ready at http://localhost:${port}`));
