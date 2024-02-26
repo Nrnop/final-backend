@@ -1,21 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const postgres = require('postgres');
-PGHOST = 'ep-super-shadow-47901102.us-east-2.aws.neon.tech'
-PGDATABASE = 'FinalProject'
-PGUSER = 'nuranabipour'
-PGPASSWORD = 'OlFpt25LeZDM'
-ENDPOINT_ID = 'ep-super-shadow-47901102'
+require('dotenv').config();
 
 const sql = postgres({
-    host: PGHOST,
-    database: PGDATABASE,
-    username: PGUSER,
-    password: PGPASSWORD,
-    port: 5432,
-    ssl: 'require',
+    host: process.env.PGHOST,
+    database: process.env.PGDATABASE,
+    username: process.env.PGUSER,
+    password: process.env.PGPASSWORD,
+    port: process.env.PORT,
+    ssl: process.env.SSL,
     connection: {
-        options: `project=${ENDPOINT_ID}`,
+        options: `project=${process.env.ENDPOINT_ID}`,
     },
 });
 
@@ -88,16 +84,14 @@ router.get('/:id/watchlist', async (req, res) => {
             WHERE users_movies.user_id = ${userId}
         `;
 
-        if (response.length === 0) {
-            res.status(404).send('No movies found in watchlist');
-        } else {
-            res.json(response);
-        }
+        // Instead of sending a 404, send a 200 with an empty array
+        res.json(response.length > 0 ? response : []);
     } catch (error) {
         console.error('Error Fetching Watchlist:', error);
         res.status(500).send('Server error');
     }
 });
+
 
 router.post('/manageWatchlist', async (req, res) => {
     try {
@@ -138,7 +132,6 @@ router.get('/:userId/isMovieInWatchlist/:movieId', async (req, res) => {
     }
 });
 
-module.exports = router;
 
 router.put('/:id/updateUserInfo', async (req, res) => {
     const userId = req.params.id;
@@ -167,3 +160,4 @@ router.put('/:id/updateUserInfo', async (req, res) => {
     }
 });
 
+module.exports = router;
