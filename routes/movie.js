@@ -155,10 +155,23 @@ router.get('/', async (req, res) => {
         res.status(500).send('Server error');
     }
 });
-
-
-
-
+router.post('/search', async (req, res) => {
+    try {
+        const { search } = req.body;
+        if (!search) {
+            return res.status(400).send('A search value is required');
+        }
+        const movies = await sql`
+            SELECT * FROM movies 
+            WHERE director ILIKE ${'%' + search + '%'} 
+            OR movie_name ILIKE ${'%' + search + '%'}
+        `;
+        res.json(movies);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+});
 
 
 module.exports = router;
