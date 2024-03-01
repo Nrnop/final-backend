@@ -25,8 +25,18 @@ router.get('/tags', async (_, response) => {
     const tags = await sql`select * from tags`;
     response.send(tags);
 });
+router.get('/:id/tags', async (req, response) => {
+    const {id} = req.params;
+    const tags = await sql`select tag_id from movies_tags where movie_id=${id}`;
+    response.send(tags);
+});
 router.get('/stars', async (_, response) => {
     const stars = await sql`select * from stars`;
+    response.send(stars);
+});
+router.get('/:id/stars', async (req, response) => {
+    const {id} = req.params;
+    const stars = await sql`select star_id from movies_stars where movie_id=${id}`;
     response.send(stars);
 });
 router.get('/tags/:tagName', async (req, response) => {
@@ -48,16 +58,16 @@ router.get('/tags/:tagName', async (req, response) => {
 
 router.get('/years', async (req, res) => {
     try {
-        const years = await sql `SELECT DISTINCT year FROM movies ORDER BY year DESC`;
+        const years = await sql`SELECT DISTINCT year FROM movies ORDER BY year DESC`;
         res.json(years);
     } catch (error) {
         console.error("Failed to fetch years:", error);
-        res.status(500).send({ error: "Failed to fetch years from the database." });
+        res.status(500).send({error: "Failed to fetch years from the database."});
     }
 });
 router.get('/year/:year', async (req, response) => {
     try {
-        const { year } = req.params;
+        const {year} = req.params;
         const movies = await sql`
             SELECT * FROM movies
             WHERE year = ${year}
@@ -70,7 +80,7 @@ router.get('/year/:year', async (req, response) => {
 });
 
 router.get('/:id', async (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
 
     try {
         // Fetch the movie by ID
@@ -115,11 +125,8 @@ router.get('/', async (req, res) => {
     try {
         // Fetch all movies
         const movies = await sql`SELECT * FROM movies`;
-
-        // Initialize an array to hold the final result
         let results = [];
 
-        // Loop through each movie to fetch its stars and tags
         for (const movie of movies) {
             // Fetch stars related to the movie
             const stars = await sql`
@@ -144,11 +151,9 @@ router.get('/', async (req, res) => {
                 tags: tags.map(t => t.tag_name)
             };
 
-            // Add the combined movie info to the results array
             results.push(result);
         }
 
-        // Send the results as JSON
         res.json(results);
     } catch (err) {
         console.error(err.message);
@@ -157,7 +162,7 @@ router.get('/', async (req, res) => {
 });
 router.post('/search', async (req, res) => {
     try {
-        const { search } = req.body;
+        const {search} = req.body;
         if (!search) {
             return res.status(400).send('A search value is required');
         }
